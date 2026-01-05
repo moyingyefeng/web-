@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>女巫的魔药坩埚</title>
+<style type="text/css">
+    body{	      
+		background-image:url("images/background01.png");
+		margin: 0;
+		padding: 0;
+		min-height: 100vh;
+        background-repeat:no-repeat;
+		background-position: center;
+		background-size: cover;
+		background-attachment: fixed;
+        cursor: default;
+    }
+    .label{
+	    width:120px;
+		height: 110px;
+		border: 16px solid rgba(228,193,140);
+		background-color: rgb(252,232,201);
+		color: rgb(154,91,53); 
+		margin:30px ;
+		position: relative; 
+		z-index: 1; 
+		display: flex; 
+		justify-content: center;
+		align-items: center; 
+		font-size: 50px; 
+		text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+	    float: left;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .label:hover{
+        transform: scale(1.1);
+        box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
+        z-index: 10;
+    }
+	.chat{
+		width:65%;
+		height: 20vh;
+		border: 16px solid rgba(228,193,140);
+		background-color: rgb(252,232,201);
+		color: rgb(154,91,53); 
+		display: flex;
+		justify-content: center;
+		font-size: 5vh;
+		padding-top:50px;
+		position: relative;
+		margin-left: 1.5%;
+		top: calc(100vh - 570px); 
+		text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        transition: all 0.3s ease;
+        cursor: pointer;
+	}
+	.character-container {
+			position: fixed;
+			right: 20px;  
+			bottom: 20px;  
+			z-index: 2;
+			background-color: rgb(252,232,201);
+            cursor: pointer;
+		}
+		.character-img {
+			border: 20px solid rgba(228,193,140);
+			width: 30vw;
+			height:30vw;
+            transition: all 0.3s ease;
+		}
+    
+    /* 新增：人物图像发光效果 */
+    .character-img:hover {
+        box-shadow: 0 0 25px 10px rgba(255, 215, 0, 0.8);
+        filter: brightness(1.1);
+    }
+    
+    /* 新增：对话文字变化效果 */
+    .chat.changing {
+        transform: scale(1.02);
+        background-color: rgb(255, 242, 220);
+        box-shadow: 0 0 20px 5px rgba(228,193,140,0.5);
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 100;
+        justify-content: center;
+        align-items: center;
+    }
+    /* 核心修改1：调整模态框内容容器，取消最大高度限制，增加底部内边距避免遮挡按钮 */
+    .modal-content {
+        background-color: rgb(252,232,201);
+        border: 16px solid rgba(228,193,140);
+        padding: 30px;
+        padding-bottom: 80px; /* 增加底部内边距，给按钮留空间 */
+        width: 70vw; /* 加宽容器，适配3列布局 */
+        max-width: 800px; /* 限制最大宽度 */
+        height: auto; /* 高度自适应，取消固定高度 */
+        max-height: 90vh; /* 最大高度占视口90%，避免溢出 */
+        border-radius: 10px;
+        position: relative;
+        color: rgb(154,91,53);
+        overflow-y: hidden; /* 禁用垂直滚动 */
+        font-size: 1.5vw;
+        min-font-size: 16px;
+    }
+    .modal-content h2 {
+        font-size: 2.5vw;
+        min-font-size: 24px;
+        margin-top: 0;
+        text-align: center;
+        margin-bottom: 20px; /* 增加标题底部间距 */
+    }
+    .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 30px;
+        cursor: pointer;
+    }
+    /* 单图模式样式 */
+    .backpack-grid-single {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60%;
+        margin: 20px 0;
+        padding: 10px;
+    }
+    /* 核心修改2：总览模式样式 - 调整网格和间距，适配小尺寸图片 */
+    .backpack-grid-overview {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3列布局 */
+        gap: 15px; /* 缩小网格间距 */
+        margin-top: 10px;
+        padding: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    /* 核心修改3：缩小物品槽尺寸，总览模式下更紧凑 */
+    .item-slot {
+        position: relative;
+        width: 150px; /* 单图模式基础宽度 */
+        height: 150px; /* 单图模式基础高度 */
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    /* 总览模式物品槽适配 - 进一步缩小 */
+    .backpack-grid-overview .item-slot {
+        width: 100%;
+        padding-top: 100%; /* 保持正方形 */
+        height: auto;
+        max-width: 120px; /* 限制总览模式最大宽度 */
+        max-height: 120px; /* 限制总览模式最大高度 */
+        margin: 0 auto; /* 居中显示 */
+    }
+    /* 核心修改4：调整物品缩略图尺寸，适配小槽位 */
+    .item-thumbnail {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: all 0.3s ease;
+    }
+    .item-slot:hover .item-thumbnail {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px 3px rgba(255, 215, 0, 0.8);
+        border-radius: 5px;
+    }
+    /* 恢复物品数量字体大小到原始值，适配布局 */
+    .item-count {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background-color: rgba(154,91,53, 0.8);
+        color: white;
+        font-size: 16px; /* 恢复原始字体大小 */
+        width: 24px; /* 适配字体大小的尺寸 */
+        height: 24px; /* 适配字体大小的尺寸 */
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    /* 恢复物品名称字体大小到原始值 */
+    .item-name {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background-color: rgba(252,232,201, 0.9);
+        color: rgb(154,91,53);
+        font-size: 20px; /* 恢复原始字体大小 */
+        padding: 2px 6px; /* 恢复原始内边距 */
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    /* 背包提示文字样式 */
+    .backpack-hint {
+        text-align: center;
+        font-size: 14px;
+        color: rgb(124,71,33);
+        margin-top: 10px;
+        font-style: italic;
+    }
+    /* 核心修改5：调整按钮位置和层级，确保不被遮挡 */
+    .backpack-mode-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        background-color: rgb(154,91,53);
+        color: white;
+        border: 4px solid rgba(228,193,140,0.8);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        z-index: 999; /* 提高层级，确保不被遮挡 */
+        box-sizing: border-box;
+    }
+    .backpack-mode-btn:hover {
+        background-color: rgb(174,111,73);
+        transform: scale(1.05);
+        box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.5);
+    }
+    .item-detail-modal .modal-content {
+        display: flex;
+        gap: 30px;
+        max-width: 800px;
+        height: auto;
+        max-height: 80vh;
+    }
+    .item-detail-img {
+        width: 200px;
+        height: 200px;
+        object-fit: contain;
+    }
+    .item-detail-info {
+        flex: 1;
+    }
+    .item-detail-name {
+        font-size: 28px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid rgba(154,91,53,0.5);
+        padding-bottom: 10px;
+    }
+    .item-detail-desc {
+        font-size: 18px;
+        line-height: 1.6;
+    }
+    .tarot-deck {
+        position: absolute;
+        left: 10%;
+        top: 45%;
+        transform: translateX(-50%);
+        width: 20vh;
+        height: 20vh;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 5;
+    }
+    .tarot-deck:hover {
+        transform: translateX(-50%) scale(1.2);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+    }
+  #tarot-modal .modal-content {
+      width: 95vw;
+      height: 85vh;
+      max-width: 1600px;
+      max-height: 1000px;
+      overflow: hidden;
+      padding: 20px;
+  }
+   
+  .tarot-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: 0;
+  }
+   
+   
+  .tarot-selection {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+  }
+  
+ 
+  .tarot-title {
+      font-size: 3vw;
+      margin: 20px 0 40px 0;
+      text-align: center;
+      color: rgb(154,91,53);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      width: 100%;
+  }
+  
+  .tarot-cards-container {
+      width: 60vw; 
+      max-width: 60vw; 
+      height: 40vh;
+	  left:5vw;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    
+  }
+  
+  .tarot-cards {
+      display: flex;
+      gap: 40px;
+      height: auto;
+      position: relative;
+      left: 20;
+      transform: none;
+      transition: transform 0.4s ease;
+      will-change: transform;
+      align-items: center;
+  }
+  .tarot-card {
+      width: 200px;
+      height: 300px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      position: relative;
+      margin-top: 0;
+      filter: brightness(0.7);
+      opacity: 0.8;
+  }
+   
+   .tarot-card:hover {
+       transform: scale(1.2);
+       filter: brightness(1) drop-shadow(0 0 20px rgba(255, 215, 0, 0.9));
+       opacity: 1;
+       z-index: 10;
+   }
+   
+    .tarot-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 10px solid rgba(228,193,140,0.8);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .tarot-reading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .tarot-card-selected {
+        width: 300px;
+        height: 450px;
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+        border-radius: 15px;
+        border: 15px solid rgba(228,193,140,0.9);
+        filter: brightness(1);
+        opacity: 1;
+    }
+    
+    .tarot-card-selected img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    .tarot-reading-info {
+        text-align: center;
+        max-width: 80%;
+    }
+    
+    .tarot-card-name {
+        font-size: 2.5vw;
+        color: rgb(154,91,53);
+        margin-bottom: 20px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .tarot-card-meaning {
+        font-size: 1.5vw;
+        line-height: 1.6;
+        color: rgb(154,91,53);
+        background-color: rgba(252,232,201,0.9);
+        padding: 25px;
+        border-radius: 10px;
+        border: 4px solid rgba(228,193,140,0.7);
+    }
+    
+    .back-to-cards {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background-color: rgb(154,91,53);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1.2vw;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .back-to-cards:hover {
+        background-color: rgb(174,111,73);
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* 新增：炼药标签样式 */
+    .potion-label {
+        position: absolute;
+        top: calc(2.5vh); /* 对话框正上方 */
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 10;
+        font-size: 3vw;
+        font-weight: bold;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        background-color: rgb(252,232,201);
+        border: 16px solid rgba(228,193,140);
+        transition: all 0.3s ease;
+    }
+    
+    .potion-label:hover {
+        background-color: #A0522D;
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.5);
+    }
+    
+    /* 炼药页面样式 */
+   /* 炼药页面样式 - 修改布局为水平排列 */
+   .potion-page {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background-color: rgba(0, 0, 0, 0.8);
+       display: none;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+       flex-direction: row; /* 改为水平排列 */
+   }
+   
+   /* 炼药锅容器样式 - 移到左边 */
+   .potion-pot-container {
+       position: relative;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       margin-right: 50px; /* 与材料容器间距 */
+   }
+   
+   /* 增大炼药锅 */
+   .potion-pot {
+       width: 50vh;
+       height: 50vh;
+       object-fit: contain;
+       transition: all 0.3s ease;
+   }
+   
+   /* 材料容器样式 - 改为2x3网格布局 */
+   .materials-container {
+       position: relative;
+       width: 60vh; /* 调整宽度 */
+       height: 60vh; /* 调整高度 */
+       display: grid; /* 使用grid布局 */
+       grid-template-columns: repeat(3, 1fr); /* 3列 */
+       grid-template-rows: repeat(2, 1fr); /* 2行 */
+       gap: 30px; /* 网格间距 */
+       align-items: center;
+       justify-items: center;
+   }
+   
+   /* 增大材料图标 */
+   .material-item {
+       position: relative; /* 改为相对定位 */
+       width: 20vh;
+       height: 20vh;
+       cursor: pointer;
+       transition: all 0.3s ease;
+       border-radius: 10px;
+       border: 4px solid transparent;
+       background-color: rgba(252,232,201,0.9);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       left: auto !important; /* 取消绝对定位 */
+       top: auto !important;  /* 取消绝对定位 */
+   }
+   
+   .material-item img {
+       width: 18vh;  /* 增大图标 */
+       height: 18vh; /* 增大图标 */
+       object-fit: contain;
+   }
+    
+    /* 操作按钮样式 */
+   .potion-actions {
+       position: absolute;
+       bottom: 50px;
+       left: 50%;
+       transform: translateX(-50%);
+       display: none;
+       gap: 20px;
+   }
+   
+   /* 调整炼药结果位置 */
+   .potion-result {
+       position: absolute;
+       top: 50px; /* 放在炼药锅上方 */
+       left: 50%;
+       transform: translateX(-50%);
+       color: white;
+       font-size: 32px;
+       font-weight: bold;
+       text-shadow: 0 0 10px rgba(0,0,0,0.8);
+       text-align: center;
+       display: none;
+       background-color: rgba(154,91,53,0.8);
+       padding: 15px 30px;
+       border-radius: 10px;
+       border: 4px solid rgba(228,193,140,0.8);
+       z-index: 10;
+   }
+    
+    .action-btn {
+        padding: 12px 24px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: bold;
+        border: 4px solid rgba(228,193,140,0.8);
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        background-color: #45a049;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.5);
+    }
+    
+    .action-btn[data-action="exit"] {
+        background-color: #f44336;
+    }
+    
+    .action-btn[data-action="exit"]:hover {
+        background-color: #d32f2f;
+    }
+    
+    .action-btn[data-action="share"] {
+        background-color: #2196F3;
+    }
+    
+    .action-btn[data-action="share"]:hover {
+        background-color: #0b7dda;
+    }
+</style>
+</head>
+<body>
+ <img class="tarot-deck" src="tarot/carddeck.png" alt="塔罗牌堆" id="tarot-deck">
+ 
+ <div class="label" data-modal="attribute">属性</div>
+ <div class="label" data-modal="backpack">背包</div>
+ <div class="label" data-modal="hint">提示</div>
+ <div class="label" data-modal="setting">设置</div>
+ 
+ <!-- 新增：炼药标签 -->
+ <div id="potionLabel" class="potion-label">开始炼药</div>
+ 
+ <!-- 修改：给对话区域添加ID -->
+ <div class="chat" id="chat-box">按照书上所言，只要这样...再这样...就可以炼制出完美的药水了!!</div>
+ <div class="character-container">
+     <!-- 修改：给人物图像添加ID -->
+     <img class="character-img" src="images/character01.png" alt="角色图片" id="character-img">
+ </div>
+ <div id="attribute-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <h2>属性面板</h2>
+        <p>这里是角色的属性信息</p>
+        <ul>
+            <li>魔法值: 100/100</li>
+            <li>生命值: 80/80</li>
+            <li>耐力值: 60/60</li>
+            <li>等级: 1</li>
+        </ul>
+    </div>
+ </div>
+ <div id="backpack-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <h2>背包</h2>
+        <!-- 动态切换类名：backpack-grid-single / backpack-grid-overview -->
+        <div id="backpack-grid" class="backpack-grid-single">
+            <!-- 动态生成内容 -->
+        </div>
+        <!-- 单图模式提示文字 -->
+        <p class="backpack-hint" id="backpack-hint">滚动鼠标继续查看其他材料 | 点击图片查看详情</p>
+        <!-- 新增：模式切换按钮 -->
+        <button class="backpack-mode-btn" id="backpack-mode-btn">总览</button>
+    </div>
+ </div>
+ <div id="hint-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <h2>提示</h2>
+        <p>当前任务：制作出有治疗功能的药水</p>
+        <p>提示：治药水需要水仙花和月光露水</p>
+    </div>
+ </div>
+ <div id="setting-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <h2>设置</h2>
+        <p>音量：<input type="range" min="0" max="100" value="80"></p>
+        <p>画质：<select>
+            <option>高</option>
+            <option selected="">中</option>
+            <option>低</option>
+        </select></p>
+        <p>音效：<input type="checkbox" checked=""> 开启</p>
+    </div>
+ </div>
+ <div id="item-detail-modal" class="modal item-detail-modal">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <img class="item-detail-img" id="detail-img" src="" alt="物品图片">
+        <div class="item-detail-info">
+            <h3 class="item-detail-name" id="detail-name"></h3>
+            <p class="item-detail-desc" id="detail-desc"></p>
+        </div>
+    </div>
+ </div>
+ <div id="tarot-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <div class="tarot-container" id="tarot-container">
+            <div class="tarot-selection" id="tarot-selection" style="display: block;">
+                <h2 class="tarot-title">选择一张塔罗牌</h2>
+                <div class="tarot-cards-container" style="cursor: grab;">
+                    <div class="tarot-cards" id="tarot-cards">
+                
+                    </div>
+                </div>
+            </div>
+            <div class="tarot-reading" id="tarot-reading" style="display: none;">
+                <div class="tarot-card-selected">
+                    <img id="selected-card-img" src="" alt="选中的塔罗牌">
+                </div>
+                <div class="tarot-reading-info">
+                    <h3 class="tarot-card-name" id="tarot-card-name"></h3>
+                    <p class="tarot-card-meaning" id="tarot-card-meaning"></p>
+                </div>
+                <button class="back-to-cards" id="back-to-cards">返回选牌</button>
+            </div>
+        </div>
+    </div>
+ </div>
+ <!-- 新增：炼药页面 -->
+ <div id="potionPage" class="potion-page">
+     <div class="potion-pot-container">
+         <img id="potionPot" src="images/pot01.png" class="potion-pot">
+         <div id="potionResult" class="potion-result"></div>
+     </div>
+     <div class="materials-container"></div>
+     <div id="potionActions" class="potion-actions">
+         <button class="action-btn" data-action="restart">再次炼药</button>
+         <button class="action-btn" data-action="exit">退出炼药</button>
+         <button class="action-btn" data-action="share">分享</button>
+     </div>
+ </div>
+ <script>
+    const items = [
+        {
+            id: 1,
+            name: "金粒",
+            count: 3,
+            description: "贵金属，拥有稳定的性质。价格昂贵，请谨慎取用！！"
+        },
+        {
+            id: 2,
+            name: "银汤勺",
+            count: 1,
+            description: "贵金属，与魔力拥有良好的相性，被广泛的应用在通灵，法器制作，魔药炼成等领域中。目前你的银耗材已见底，不得不拿出了这把勺子"
+        },
+        {
+            id: 3,
+            name: "铜锭",
+            count: 4,
+            description: "价格亲民的金属，但相比金银材料效果欠佳。智慧地取用它，也许可以大大节省成本！！"
+        },
+		{
+		    id: 4,
+		    name: "月光露水",
+		    count: 999,
+		    description: "你选中一个灵气充沛的满月之夜，特地收集的数瓶月光露水，大概可以保障接下来小半年的魔力媒介供应"
+		},
+		{
+		    id: 5,
+		    name: "水仙花",
+		    count: 20,
+		    description: "你选中一个晨雾弥漫的早晨，特地采摘的水仙花，因为用魔力保存得很好的缘故，似乎还留着露珠"
+		},
+		{
+		    id: 6,
+		    name: "玫瑰花",
+		    count: 20,
+		    description: "你选中一个烈日灼目的中午，特地采摘的玫瑰花，气味浓郁热烈，香得人头晕目眩"
+		}
+    ];
+    const tarotCards = [
+        {
+            id: 1,
+            name: "太阳",
+            image: "tarot/card1.png",
+            meaning: "太阳牌代表着成功、欢乐与活力。这张牌预示着光明的前途，充满了正能量和生命力。（也许可以大胆的放入昂贵的材料！！！）"
+        },
+        {
+            id: 2,
+            name: "月亮",
+            image: "tarot/card2.png",
+            meaning: "月亮牌象征着潜意识、梦境和直觉。它提醒你要注意隐藏的真相，可能会有一些不确定性，但正是机会。（也许应该多翻翻书）"
+        },
+        {
+            id: 3,
+            name: "星星",
+            image: "tarot/card3.png",
+            meaning: "星星牌代表着希望、灵感和指引。这张牌出现在黑暗中如同指路明灯，预示着新的可能性。(事情好像并没有那么糟糕)"
+			
+        },
+        {
+            id: 4,
+            name: "力量",
+            image: "tarot/card4.png",
+            meaning: "力量牌象征着勇气、坚韧和内心的力量。即使面对挑战，也要有足够的勇气和智慧去克服，真正的力量来自于内心。（遵从内心吧！）"
+        },
+        {
+            id: 5,
+            name: "节制",
+            image: "tarot/card5.png",
+            meaning: "节制牌代表着平衡、调和与耐心。这张牌提醒你要找到平衡点，通过调节不同的因素来达到和谐的状态。（也许应该想想忽略了什么材料）"
+        },
+        {
+            id: 6,
+            name: "命运之轮",
+            image: "tarot/card6.png",
+            meaning: "命运之轮象征着命运的转折、机遇与循环。这张牌预示着变化即将到来，无论是好是坏，都是生命循环中的一部分。（随便吧）"
+        }
+    ];
+    
+    // 新增：对话内容数组
+    const dialogues = [
+        "按照书上所言，只要这样...再这样...就可以炼制出完美的药水了!!",
+        "这个配方看起来有点复杂，需要仔细研究一下...",
+        "咦？银汤勺怎么不见了？我记得放在这里的...",
+        "月光露水的存量还挺多的，可以放心使用~",
+        "上次炼药失败的原因到底是什么呢...",
+        "如果加点金粒会不会效果更好？",
+        "塔罗牌显示今天适合炼药，开始动手吧！",
+        "需要更精确地控制火候才行...",
+        "这个气味...好像有点不对劲？",
+        "成功了！这次一定可以炼出完美的药水！"
+    ];
+    
+    // 背包核心变量
+    const backpackGrid = document.getElementById('backpack-grid');
+    const backpackHint = document.getElementById('backpack-hint');
+    const backpackModeBtn = document.getElementById('backpack-mode-btn');
+    let currentItemIndex = 0; // 单图模式当前显示索引
+    let isOverviewMode = false; // 是否为总览模式
+    
+    // ====================== 背包模式切换核心逻辑 ======================
+    // 初始化背包（默认单图模式）
+    initBackpackSingleMode();
+    
+    // 绑定模式切换按钮事件
+    backpackModeBtn.addEventListener('click', () => {
+        if (!isOverviewMode) {
+            // 切换到总览模式
+            switchToOverviewMode();
+        } else {
+            // 切换回单图模式
+            switchToSingleMode();
+        }
+    });
+    
+    // 单图模式初始化
+    function initBackpackSingleMode() {
+        // 创建初始单图
+        createSingleItemSlot(items[currentItemIndex]);
+        // 绑定滚轮事件
+        bindSingleModeWheelEvent();
+        // 绑定点击事件
+        bindItemClickEvent();
+    }
+    
+    // 切换到单图模式
+    function switchToSingleMode() {
+        // 更新UI状态
+        isOverviewMode = false;
+        backpackGrid.className = 'backpack-grid-single';
+        backpackHint.style.display = 'block';
+        backpackModeBtn.textContent = '总览';
+        
+        // 重新初始化单图模式
+        currentItemIndex = 0;
+        initBackpackSingleMode();
+    }
+    
+    // 切换到总览模式（核心修改：固定显示6种不同材料，无轮换）
+    function switchToOverviewMode() {
+        // 清除滚轮事件（避免总览模式下触发滚轮切换）
+        const backpackModalContent = document.querySelector('#backpack-modal .modal-content');
+        backpackModalContent.removeEventListener('wheel', handleSingleModeWheel);
+        
+        // 更新UI状态
+        isOverviewMode = true;
+        backpackGrid.className = 'backpack-grid-overview';
+        backpackHint.style.display = 'none';
+        backpackModeBtn.textContent = '返回';
+        
+        // 清空容器
+        backpackGrid.innerHTML = '';
+        
+        // 核心修改：生成6个固定槽位，每个槽位对应一种不同的材料
+        items.forEach((item, slotIndex) => {
+            const slot = document.createElement('div');
+            slot.className = 'item-slot';
+            // 每个槽位固定显示对应索引的材料，无轮换
+            slot.innerHTML = `
+                <span class="item-name">${item.name}</span>
+                <img src="packsack/PacksackGoods-${item.id}.png" 
+                     alt="${item.name}" 
+                     class="item-thumbnail"
+                     data-id="${item.id}">
+                <span class="item-count">${item.count}</span>
+            `;
+            backpackGrid.appendChild(slot);
+        });
+        
+        // 绑定点击事件
+        bindItemClickEvent();
+    }
+    
+    // 创建单图模式的物品槽
+    function createSingleItemSlot(item) {
+        backpackGrid.innerHTML = '';
+        const slot = document.createElement('div');
+        slot.className = 'item-slot';
+        slot.innerHTML = `
+            <span class="item-name">${item.name}</span>
+            <img src="packsack/PacksackGoods-${item.id}.png" 
+                 alt="${item.name}" 
+                 class="item-thumbnail"
+                 data-id="${item.id}">
+            <span class="item-count">${item.count}</span>
+        `;
+        backpackGrid.appendChild(slot);
+    }
+    
+    // 单图模式滚轮事件处理函数
+    function handleSingleModeWheel(e) {
+        e.preventDefault();
+        if (e.deltaY > 0) {
+            currentItemIndex = (currentItemIndex + 1) % items.length;
+        } else {
+            currentItemIndex = (currentItemIndex - 1 + items.length) % items.length;
+        }
+        createSingleItemSlot(items[currentItemIndex]);
+        bindItemClickEvent();
+    }
+    
+    // 绑定单图模式滚轮事件
+    function bindSingleModeWheelEvent() {
+        const backpackModalContent = document.querySelector('#backpack-modal .modal-content');
+        // 先移除避免重复绑定
+        backpackModalContent.removeEventListener('wheel', handleSingleModeWheel);
+        backpackModalContent.addEventListener('wheel', handleSingleModeWheel);
+    }
+    
+    // 物品点击显示详情（通用函数）
+    function bindItemClickEvent() {
+        // 先移除所有现有点击事件（避免重复）
+        document.querySelectorAll('.item-thumbnail').forEach(thumb => {
+            thumb.removeEventListener('click', handleItemClick);
+            thumb.addEventListener('click', handleItemClick);
+        });
+    }
+    
+    // 物品点击处理函数
+    function handleItemClick(e) {
+        e.stopPropagation();
+        const itemId = parseInt(this.getAttribute('data-id'));
+        const item = items.find(i => i.id === itemId);
+        
+        if (item) {
+            detailImg.src = `packsack/PacksackGoods-${item.id}.png`;
+            detailImg.alt = item.name;
+            detailName.textContent = item.name;
+            detailDesc.textContent = item.description;
+            itemDetailModal.style.display = 'flex';
+        }
+    }
+    
+    // ====================== 原有功能逻辑（无修改） ======================
+    // 生成塔罗牌 - 修复重复生成问题
+    const tarotCardsContainer = document.getElementById('tarot-cards');
+    // 清空容器防止重复
+    tarotCardsContainer.innerHTML = '';
+    // 只生成6张牌背（与tarotCards数量匹配）
+    tarotCards.forEach((_, index) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'tarot-card';
+        cardDiv.innerHTML = `
+            <img src="tarot/cardback.png" alt="塔罗牌背" class="tarot-card-img" data-card-index="${index}">
+        `;
+        tarotCardsContainer.appendChild(cardDiv);
+    });
+    
+    // 模态框控制
+    const labels = document.querySelectorAll('.label');
+    const modals = document.querySelectorAll('.modal');
+    const closeBtns = document.querySelectorAll('.close-btn');
+    const itemDetailModal = document.getElementById('item-detail-modal');
+    const detailImg = document.getElementById('detail-img');
+    const detailName = document.getElementById('detail-name');
+    const detailDesc = document.getElementById('detail-desc');
+    
+    // 塔罗牌相关元素
+    const tarotDeck = document.getElementById('tarot-deck');
+    const tarotModal = document.getElementById('tarot-modal');
+    const tarotSelection = document.getElementById('tarot-selection');
+    const tarotReading = document.getElementById('tarot-reading');
+    const selectedCardImg = document.getElementById('selected-card-img');
+    const tarotCardName = document.getElementById('tarot-card-name');
+    const tarotCardMeaning = document.getElementById('tarot-card-meaning');
+    const backToCardsBtn = document.getElementById('back-to-cards');
+    
+    // 新增：获取对话框和人物图像元素
+    const chatBox = document.getElementById('chat-box');
+    const characterImg = document.getElementById('character-img');
+    
+    // 新增：人物图像切换状态
+    let isCharacter01 = true;
+    
+    // 标签点击显示对应模态框
+    labels.forEach(label => {
+        label.addEventListener('click', () => {
+            const modalId = label.getAttribute('data-modal') + '-modal';
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        });
+    });
+    
+    // 关闭按钮事件
+    closeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = btn.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+                if (modal.id === 'tarot-modal') {
+                    tarotReading.style.display = 'none';
+                    tarotSelection.style.display = 'block';
+                }
+                // 如果关闭的是背包模态框，重置为单图模式
+                if (modal.id === 'backpack-modal') {
+                    switchToSingleMode();
+                }
+            }
+        });
+    });
+    
+    // 点击外部关闭模态框
+    window.addEventListener('click', (e) => {
+        modals.forEach(modal => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                if (modal.id === 'tarot-modal') {
+                    tarotReading.style.display = 'none';
+                    tarotSelection.style.display = 'block';
+                }
+                // 如果关闭的是背包模态框，重置为单图模式
+                if (modal.id === 'backpack-modal') {
+                    switchToSingleMode();
+                }
+            }
+        });
+    });
+    
+    // 塔罗牌堆点击事件
+    if (tarotDeck) {
+        tarotDeck.addEventListener('click', () => {
+            if (tarotModal) {
+                tarotModal.style.display = 'flex';
+            }
+        });
+    }
+    
+    // 塔罗牌点击事件
+    document.querySelectorAll('.tarot-card-img').forEach(card => {
+        card.addEventListener('click', (e) => {
+            const cardIndex = parseInt(e.target.getAttribute('data-card-index'));
+            const selectedCard = tarotCards[cardIndex];
+            
+            // 更新解牌界面
+            if (selectedCardImg) selectedCardImg.src = selectedCard.image;
+            if (selectedCardImg) selectedCardImg.alt = selectedCard.name;
+            if (tarotCardName) tarotCardName.textContent = selectedCard.name;
+            if (tarotCardMeaning) tarotCardMeaning.textContent = selectedCard.meaning;
+            
+            // 切换到解牌界面
+            if (tarotSelection && tarotReading) {
+                tarotSelection.style.display = 'none';
+                tarotReading.style.display = 'flex';
+            }
+        });
+    });
+    
+    // 返回选牌按钮事件
+    if (backToCardsBtn) {
+        backToCardsBtn.addEventListener('click', () => {
+            if (tarotReading && tarotSelection) {
+                tarotReading.style.display = 'none';
+                tarotSelection.style.display = 'block';
+            }
+        });
+    }
+    
+    // 塔罗牌水平滑动效果
+    const tarotCardsElement = document.getElementById('tarot-cards');
+    const cardsContainer = document.querySelector('.tarot-cards-container');
+    
+    if (tarotCardsElement && cardsContainer) {
+        let isMouseDown = false;
+        let startX;
+        let currentTranslate = 0;
+        let animationId = null;
+        // 计算滑动限制
+        const cardWidth = 200;
+        const cardGap = 40;
+        const totalCards = document.querySelectorAll('.tarot-card').length;
+        const totalWidth = totalCards * (cardWidth + cardGap) - cardGap;
+        const containerWidth = cardsContainer.offsetWidth;
+        const maxTranslate = 0;
+        const minTranslate = -(totalWidth - containerWidth);
+        tarotCardsElement.style.width = `${totalWidth}px`;
+        
+        // 确保初始位置居中显示
+        const initialOffset = Math.min(0, -(totalWidth - containerWidth) / 2);
+        currentTranslate = initialOffset;
+        tarotCardsElement.style.transform = `translateX(${currentTranslate}px)`;
+        
+        // 鼠标按下事件
+        cardsContainer.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            cardsContainer.style.cursor = 'grabbing';
+            startX = e.clientX;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        });
+        
+        // 鼠标移动事件
+        cardsContainer.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+            e.preventDefault();
+            
+            const currentX = e.clientX;
+            const walk = (currentX - startX) * 1;
+            
+            // 应用边界限制
+            currentTranslate = Math.min(maxTranslate, Math.max(minTranslate, currentTranslate + walk));
+            tarotCardsElement.style.transform = `translateX(${currentTranslate}px)`;
+            
+            startX = currentX;
+        });
+        
+        // 鼠标松开事件
+        cardsContainer.addEventListener('mouseup', () => {
+            isMouseDown = false;
+            cardsContainer.style.cursor = 'grab';
+        });
+        
+        // 鼠标离开事件
+        cardsContainer.addEventListener('mouseleave', () => {
+            if (isMouseDown) {
+                isMouseDown = false;
+                cardsContainer.style.cursor = 'grab';
+            }
+        });
+        
+        // 鼠标进入时设置抓取光标
+        cardsContainer.addEventListener('mouseenter', () => {
+            if (!isMouseDown) {
+                cardsContainer.style.cursor = 'grab';
+            }
+        });
+    }
+    
+    // 新增：主界面点击事件 - 随机切换对话文字
+    document.body.addEventListener('click', function(e) {
+        // 排除模态框、标签、塔罗牌堆、人物图像等特定元素的点击
+        if (
+            e.target.closest('.modal') || 
+            e.target.closest('.label') || 
+            e.target.closest('.tarot-deck') ||
+            e.target.closest('#character-img') ||
+            e.target.closest('.character-container') ||
+            e.target.closest('.potion-label') || // 排除炼药标签
+            e.target.closest('.potion-page')     // 排除炼药页面
+        ) {
+            return;
+        }
+        
+        // 随机选择一条对话
+        const randomIndex = Math.floor(Math.random() * dialogues.length);
+        const newDialogue = dialogues[randomIndex];
+        
+        // 添加变化效果
+        chatBox.classList.add('changing');
+        chatBox.textContent = newDialogue;
+        
+        // 移除效果
+        setTimeout(() => {
+            chatBox.classList.remove('changing');
+        }, 300);
+    });
+    
+    // 新增：人物图像点击事件 - 切换图像
+    if (characterImg) {
+        characterImg.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止事件冒泡到body
+            
+            if (isCharacter01) {
+                // 切换到character03.png
+                this.src = "images/character03.png";
+                this.alt = "角色图片 - 表情2";
+                isCharacter01 = false;
+            } else {
+                // 切换回character01.png
+                this.src = "images/character01.png";
+                this.alt = "角色图片 - 表情1";
+                isCharacter01 = true;
+            }
+            
+            // 添加一个点击反馈效果
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    }
+    
+    // 新增：对话区域点击事件 - 也切换对话文字
+    if (chatBox) {
+        chatBox.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止事件冒泡到body
+            
+            // 随机选择一条对话
+            const randomIndex = Math.floor(Math.random() * dialogues.length);
+            const newDialogue = dialogues[randomIndex];
+            
+            // 添加变化效果
+            this.classList.add('changing');
+            this.textContent = newDialogue;
+            
+            // 移除效果
+            setTimeout(() => {
+                this.classList.remove('changing');
+            }, 300);
+        });
+    }
+    
+    // 新增炼药相关JavaScript
+    // 获取元素
+    const potionLabel = document.getElementById('potionLabel');
+    const potionPage = document.getElementById('potionPage');
+    const potionPot = document.getElementById('potionPot');
+    const materialsContainer = document.querySelector('.materials-container');
+    const potionResult = document.getElementById('potionResult');
+    const potionActions = document.getElementById('potionActions');
+    // 选中的材料ID数组
+    let selectedMaterials = [];
+    // 使用现有背包材料数据
+    const backpackMaterials = items; // 直接复用已定义的items数组
+    
+    // 打开炼药页面
+    potionLabel.addEventListener('click', () => {
+        potionPage.style.display = 'flex';
+        initPotionPage();
+    });
+    
+    // 初始化炼药页面
+    function initPotionPage() {
+        // 重置状态
+        selectedMaterials = [];
+        potionPot.src = 'images/pot01.png';
+        potionResult.textContent = '';
+        potionResult.style.display = 'none';
+        potionActions.style.display = 'none';
+        
+        // 清空材料容器
+        materialsContainer.innerHTML = '';
+        
+        // 创建材料并采用2x3网格布局
+        backpackMaterials.forEach((material, index) => {
+            const materialElement = document.createElement('div');
+            materialElement.className = 'material-item';
+            materialElement.innerHTML = `<img src="packsack/PacksackGoods-${material.id}.png" alt="${material.name}" data-id="${material.id}">`;
+            
+            // 材料点击事件
+            materialElement.addEventListener('click', () => {
+                // 只允许选择3种材料且未选择过
+                if (selectedMaterials.length < 3 && !selectedMaterials.includes(material.id)) {
+                    selectedMaterials.push(material.id);
+                    materialElement.classList.add('selected');
+                    
+                    // 切换炼药锅图标
+                    if (selectedMaterials.length === 1) {
+                        potionPot.src = 'images/pot02.png';
+                    } else if (selectedMaterials.length === 2) {
+                        potionPot.src = 'images/pot03.png';
+                    } else if (selectedMaterials.length === 3) {
+                        checkPotionResult();
+                    }
+                }
+            });
+            
+            materialsContainer.appendChild(materialElement);
+        });
+    }
+    
+    // 检查炼药结果
+    function checkPotionResult() {
+        // 成功条件：包含银汤勺(id:2)、月光露水(id:4)、水仙花(id:5)
+        const success = selectedMaterials.includes(2) && 
+                       selectedMaterials.includes(4) && 
+                       selectedMaterials.includes(5);
+        
+        // 显示结果
+        if (success) {
+            potionResult.textContent = '成功炼制出了治疗药水！！';
+            potionPot.src = 'images/pot04.png';
+        } else {
+            potionResult.textContent = '炼药失败！！';
+            potionPot.src = 'images/pot05.png';
+        }
+        
+        potionResult.style.display = 'block';
+        potionActions.style.display = 'flex';
+    }
+    
+    // 操作按钮事件
+    potionActions.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+        if (action === 'restart') {
+            initPotionPage();
+        } else if (action === 'exit') {
+            potionPage.style.display = 'none';
+        } else if (action === 'share') {
+            alert('分享功能：本次炼药结果已记录');
+        }
+    });
+</script>
+</body>
+</html>
